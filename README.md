@@ -1,34 +1,27 @@
-## **Wearable Spo2 RR Forecasting**
+# **Wearable SpO₂ & RR Forecasting – Software System Overview**
 
-This project aims to develop a wrist-wearable prediction system based on photoplethysmography (PPG) signals for the early detection of **Opioid-Induced Respiratory Depression (OIRD)**. The long-term goal is to build an integrated wearable platform that combines **hardware sensing** and **software prediction modules**, enabling real-time and multi-horizon forecasting of **blood oxygen saturation (SpO₂)** and **respiratory rate (RR)** to support continuous patient monitoring and timely clinical intervention.
+This project develops a **wrist-wearable physiological forecasting system** that leverages photoplethysmography (PPG) signals to perform **real-time and multi-horizon prediction** of blood oxygen saturation (SpO₂) and respiratory rate (RR), enabling early detection of **opioid-induced respiratory depression (OIRD)**.
 
-For the software component, the **core algorithm** developed by the Spring 2025 team—based on **Gaussian Process Regression (GPR)** —is fully protected and currently under patent review. As such, this semester’s work focuses exclusively on **modular algorithmic enhancement** without modifying the core logic. All extensions must be externally attachable modules that operate independently of the protected model.
+The system builds upon a **Gaussian Process Regression (GPR) core model** developed by the Spring 2025 team, which is **currently under patent review**. To ensure IP compliance, all software contributions described below were designed as **modular, externally attachable components** that **do not modify or expose the protected GPR logic**.
 
-### **Summary of Software Contributions (Fall 2025)**
+I was solely responsible for the **software system design, implementation, evaluation, and integration**.
 
-1. **RR Feature Optimization (Non-invasive enhancement of core GPR model)**
-   Using the existing company-provided codebase—without altering any protected components—I developed an automated RR optimization pipeline (`optimize_rr_gpr.py`).
+## **Summary of Software Contributions**
 
-   * Applied z-score outlier filtering and three feature selection methods (ReliefF, LASSO, TreeFS).
-   * Evaluated each candidate feature set using the original `Run_GPR()` interface.
-   * **Reduced RR MAE from 1.07 → 0.86**, demonstrating improved RR prediction *without modifying the core GPR model*.
+1. **Feature-Optimized GPR Wrapper for RR Estimation**
+   Built a non-invasive RR optimization pipeline using automated feature selection (ReliefF, LASSO, TreeFS) and z-score outlier filtering, evaluated strictly via the original `Run_GPR()` interface; **reduced RR MAE from 1.07 → 0.86 (~20% improvement)** without modifying the patented GPR core.
 
-2. **Future Multi-Window Prediction Module (Transformer + XGBoost)**
-   Implemented a new modular forecasting framework (`real_future_prediction.py`) that predicts SpO₂ and RR across multiple future horizons (10–300+ seconds).
+2. **XGBoost-Based Multi-Horizon Forecasting (10–300s)**
+   Implemented an XGBoost forecasting model trained on the **BIDMC dataset** to predict future SpO₂ and RR across **10–300+ second horizons**, enabling early physiological risk detection beyond instantaneous monitoring.
 
-   * Designed a Transformer-based temporal encoder to capture long-range dependencies in PPG-derived features.
-   * Combined Transformer embeddings with XGBoost regressors to improve multi-horizon predictive performance.
-   * Fully modular: operates as an external component without altering the protected GPR structure.
+3. **Transformer-Based Temporal Encoder for PPG Sequences**
+   Designed a Transformer-based temporal encoder to extract **multi-scale temporal features** from high-frequency PPG sequences, improving **long-horizon prediction stability** under noisy and distorted inputs.
 
-3. **Unified Inference Pipeline**
-   Developed `infer.py` as a consolidated inference interface that:
+4. **Unified Real-Time Inference Pipeline**
+   Developed a production-ready inference pipeline integrating **GPR (instantaneous prediction)** and **Transformer–XGBoost (future forecasting)**, supporting **single-vector and time-series inputs** and outputting **standardized JSON predictions** for downstream system integration.
 
-   * Loads the trained multi-window model.
-   * Optionally incorporates the original GPR model for “current value” prediction.
-   * Generates future SpO₂ and RR predictions from either a single feature vector or a time-sequence CSV.
-   * Outputs standardized JSON-format predictions for downstream system integration.
+5. **Variability & Stress-Testing Framework (125 Hz Simulation)**
+   Built a comprehensive stress-testing framework simulating **125 Hz wearable input** under controlled noise, 5% missing samples, and motion artifacts; validated robustness across **11 stress scenarios** with **stable feature extraction (125–131 features)** and zero inference failures.
 
-Together, these enhancements directly support the semester’s goals—
-**(i) extending prediction beyond 30 seconds with preserved accuracy**,
-**(ii) improving RR prediction performance**, and
-**(iii) maintaining strict modularity under the project’s IP protection constraints.**
+6. **Latency, Stability, and Reliability Evaluation**
+   Evaluated end-to-end pipeline performance under diverse stress conditions, achieving **low-latency inference (mean 4.6–5.5 ms)**, **low timing jitter (CV 0.03–0.14)**, **bounded latency (4.2–6.8 ms)**, and **100% functional reliability** across all test cases.
